@@ -1,0 +1,36 @@
+name: Update Complete TODO List
+
+on:
+  push:
+    branches:
+      - dev
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-todo-list:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out dev branch
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+          fetch-depth: 0
+
+      - name: Generate updated TODO list
+        run: python3 .github/update_todo_list.py
+
+      - name: Commit updated README
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          if git diff --staged --quiet; then
+            echo "No README changes to commit."
+          else
+            git commit -m "docs: update complete TODO list from dev branch"
+            git push origin HEAD:dev
+          fi
